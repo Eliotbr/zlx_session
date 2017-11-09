@@ -1,0 +1,20 @@
+{
+    "name": "aledefreitas/zlx_session",
+    "description": "Singleton for Session using ZLX Cache and ZLX Security",
+    "require": {
+        "php": ">=5.6",
+        "aledefreitas/zlx_cache": "*",
+        "aledefreitas/zlx_security": "*"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alexandre de Freitas Caetano",
+            "email": "alexandrefc2@hotmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+	"autoload": {
+		"psr-4": { "ZLX\\": "src/" }
+	}
+}
