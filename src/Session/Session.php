@@ -109,7 +109,7 @@ class Session
 		$salt = isset($config['security_salt']) ? $config['security_salt'] : null;
 
 		self::$_instance = new self($config, new Security($salt));
-		//self::$_instance->keepAlive();
+		self::$_instance->keepAlive();
 	}
 
 	/**
