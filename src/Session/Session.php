@@ -92,7 +92,7 @@ class Session
 		// Checks whether the session is valid still
 		if(!$this->isValid()) {
 			// If it isn't, destroys and starts a new one
-			self::destroy();
+			$this->destroySession();
 			$this->startSession();
 		}
 	}
@@ -201,6 +201,18 @@ class Session
 	}
 
 	/**
+	 * Destroys the session
+	 *
+	 * @return void
+	 */
+	private function destroySession()
+	{
+		Cache::delete("Session.".$this->session_id, $this->cache_instance);
+		setcookie($this->cookie_name, null, 1, "/",  $this->host_name, false, true);
+		$this->data = [];
+	}
+
+	/**
 	 * Returns the id for this session
 	 *
 	 * @return string
@@ -226,9 +238,7 @@ class Session
 		$instance = self::getInstance();
 
 		if($instance) {
-			Cache::delete("Session.".self::getSessionId(), $instance->cache_instance);
-			setcookie($instance->cookie_name, null, 1, "/",  $instance->host_name, false, true);
-			$this->data = [];
+			$instance->destroySession();
 		}
 	}
 
