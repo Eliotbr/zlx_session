@@ -12,7 +12,8 @@ use ZLX\Security\Security;
 /**
  * Session using ZLX Cache
  */
-class Session {
+class Session
+{
 	/**
 	 * Session ID
 	 *
@@ -215,8 +216,10 @@ class Session {
 	 */
 	public static function destroy()
 	{
-		Cache::delete("Session.".self::getSessionId(), $this->cache_instance);
-		setcookie($this->cookie_name, null, 1, "/",  $this->host_name, false, true);
+		$instance = self::getInstance();
+
+		Cache::delete("Session.".self::getSessionId(), $instance->cache_instance);
+		setcookie($this->cookie_name, null, 1, "/",  $instance->host_name, false, true);
 		$this->data = [];
 	}
 
