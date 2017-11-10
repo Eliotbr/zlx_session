@@ -227,7 +227,7 @@ class Session
 
 		if($instance) {
 			Cache::delete("Session.".self::getSessionId(), $instance->cache_instance);
-			setcookie($this->cookie_name, null, 1, "/",  $instance->host_name, false, true);
+			setcookie($instance->cookie_name, null, 1, "/",  $instance->host_name, false, true);
 			$this->data = [];
 		}
 	}
