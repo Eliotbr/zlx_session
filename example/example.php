@@ -2,7 +2,9 @@
 
 require_once("./bootstrap.php");
 
-Session::set("Test", [ 'key' => 'value' ]);
+use ZLX\Session\Session;
+
+var_dump(Session::set("Test", [ 'key' => 'value' ]));
 
 var_dump(Session::get("Test"));
 

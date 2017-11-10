@@ -76,15 +76,18 @@ class Session
 		 */
 		$this->cookie_name = isset($config['cookie_name']) && trim($config['cookie_name']) !== '' ? $config['cookie_name'] : $this->cookie_name;
 		$this->session_secret = isset($config['session_secret']) ? $config['session_secret'] : $this->session_secret;
-		$this->cache_instance =isset($config['cache_instance']) && trim($config['cache_instance']) !== '' ? $config['cache_instance'] : $this->cache_instance;
+		$this->cache_instance = isset($config['cache_instance']) && trim($config['cache_instance']) !== '' ? $config['cache_instance'] : $this->cache_instance;
 
 		$this->host_name = $_SERVER['SERVER_NAME'];
 
 		// Checks if the user already has a Session ID
 		if(isset($_COOKIE[$this->cookie_name])) {
 			// If so, we decrypt the cookie
-			$this->session_id = Security::decrypt($_COOKIE[$this->cookie_name], $this->session_secret);
+			$this->session_id = $this->Security->decrypt(hex2bin($_COOKIE[$this->cookie_name]), $this->session_secret);
 		}
+
+		// Stores the data into memory
+		$this->data = $this->getSessionData();
 
 		// Checks whether the session is valid still
 		if(!$this->isValid()) {
@@ -92,12 +95,6 @@ class Session
 			self::destroy();
 			$this->startSession();
 		}
-
-		// Stores the data into memory
-		$this->data = $this->getSessionData();
-
-		// Keeps the session alive on each request
-		$this->keepAlive();
 	}
 
 	/**
@@ -112,6 +109,7 @@ class Session
 		$salt = isset($config['security_salt']) ? $config['security_salt'] : null;
 
 		self::$_instance = new self($config, new Security($salt));
+		//self::$_instance->keepAlive();
 	}
 
 	/**
@@ -160,9 +158,14 @@ class Session
 	 */
 	private function getSessionData()
 	{
-		$data = Cache::get("Session.".self::getSessionId(), $this->cache_instance);
+		$data = Cache::get("Session.".$this->session_id, $this->cache_instance);
+		$data = json_decode($data, true);
 
-		return json_decode($data, true);
+		if(!$data) {
+			return [];
+		}
+
+		return $data;
 	}
 
 	/**
@@ -184,7 +187,7 @@ class Session
 	{
 		if(trim($this->session_id) == '') return false;
 
-		return Cache::set("Session.".self::getSessionId(), json_encode($this->data), $this->cache_instance);
+		return Cache::set("Session.".$this->session_id, json_encode($this->data), $this->cache_instance);
 	}
 
 	/**
@@ -206,7 +209,11 @@ class Session
 	{
 		$instance = self::getInstance();
 
-		return $instance->session_id;
+		if($instance) {
+			return $instance->session_id;
+		}
+
+		return '';
 	}
 
 	/**
@@ -218,9 +225,11 @@ class Session
 	{
 		$instance = self::getInstance();
 
-		Cache::delete("Session.".self::getSessionId(), $instance->cache_instance);
-		setcookie($this->cookie_name, null, 1, "/",  $instance->host_name, false, true);
-		$this->data = [];
+		if($instance) {
+			Cache::delete("Session.".self::getSessionId(), $instance->cache_instance);
+			setcookie($this->cookie_name, null, 1, "/",  $instance->host_name, false, true);
+			$this->data = [];
+		}
 	}
 
 	/**
@@ -234,11 +243,11 @@ class Session
 	{
 		$instance = self::getInstance();
 
-		if(!isset($instance->data[$key])) {
+		if(!isset($instance->data['values'][$key])) {
 			return false;
 		}
 
-		return $instance->data[$key];
+		return $instance->data['values'][$key];
 	}
 
 	/**
@@ -253,7 +262,7 @@ class Session
 	{
 		$instance = self::getInstance();
 
-		$instance->data[$key] = $value;
+		$instance->data['values'][$key] = $value;
 
 		return $instance->save();
 	}
